@@ -1,8 +1,7 @@
 # jk-build-html
 build static site, thinkphp class, build html page
 
-
-# JKBuildHtml 生成静态控制器类
+# JKBuildHtml 基于ThinkPHP生成静态站点控制器类
 
 完美嫁接<a href="http://www.thinkphp.cn/" target="_blank">THINKPHP</a>的静态页面生成控制器，可自定义生成规则，支持动态参数，支持参数的范围设置。
 是一个在原来开发过程没有变化的情况下搭建静态站的解决方案。
