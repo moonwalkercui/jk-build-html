@@ -9,6 +9,8 @@ build static site, thinkphp class, build html page
 暂时不是composer版本，如果需要的，可以留言。
 使用中有其他问题的欢迎留言。
 
+[https://gitee.com/ray2017/jk-build-html] 码云仓库地址
+
 ## 特点
 * 纯静态：生成的网站是静态htm页面，拷贝文件就是部署站点。
 * 方便改造：原来TP开发代码不用变动，原来TP的view文件照常写，以前怎么写模板还怎么写。
