@@ -1,5 +1,5 @@
 {
-    "name": "moonwalkercui/jkbuildhtml",
+    "name": "JKBuildHtml",
     "description": "Html page builder for THINKPHP framework, build static website, build html web page",
     "authors": [
         {
@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "moonwalkercui\\JKBuildHtml\\": "src/"
+            "JKBuildHtml\\": "src/"
         }
     }
 }

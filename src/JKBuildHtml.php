@@ -4,17 +4,25 @@
  * @since  2019-8
  * @author 冷风崔 <541720500@qq.com>
  *
- * 1，config.php中加入以下参数：
- * 'dist_path' => ROOT_PATH. 'public/', // 静态站放置路径
- * 'dist_dir_name' => 'dist', // 静态页的文件夹名 须放置在public下
- * 'dist_module_name' => 'dist', // 静态页的模块名
- * 'dist_file_dot' => '_', // 静态页文件名字中的参数分隔符
+ * 1，拷贝生成静态规则文件`dist_rules.php`文件到application目录
+ * 2, 添加配置参数（配置文件名 tp5是config.php tp5.1是app.php）中添加以下配置（注意斜杠不能少）
  *
- * 2，拷贝dist_rules.php到application目录
+    // 静态站放置路径：
+    'dist_path' => ROOT_PATH. 'public/',
+    // 静态页存放文件夹名 一般放置在public下；静态站点直接指向这个目录即可：
+    'dist_dir_name' => 'dist',
+    // 生成的静态页子页的存放目录，即匹配规则中没有@符号的页面的存放目录，注意例中路径中的'dist/site-pages'会进行目录匹配作为替换./或../的依据，所以这个名称在项目文件夹名中最好唯一：
+    'dist_sub_dir' => 'site-pages',
+    // 要生成静态页的模块名：
+    'dist_module_name' => 'index',
+    // 静态页文件名字中的参数分隔符：
+    'dist_file_dot' => '_',
+    // 静态资源路径替换 静态站点根目录下会替换成 `./` 其他会替换成 `../`
+    'dist_src_match' => '/public/static/',
+ *
  * 3, 有需要在原生tp预览模板并生成静态需求的，可以封装控制器的 fetch 方法
- *
  */
-namespace moonwalkercui;
+namespace JKBuildHtml;
 
 class JKBuildHtml
 {
@@ -25,6 +33,8 @@ class JKBuildHtml
     protected $domain;
     protected $src_match;
     protected $sub_dir;
+    protected $tp_version;
+
     public function __construct()
     {
         $this->module_name = config('dist_module_name');
@@ -33,15 +43,15 @@ class JKBuildHtml
         $this->sub_dir = config('dist_sub_dir');
         $this->file_dot = config('dist_file_dot');
         $this->src_match = config('dist_src_match');
-
-        if( $this->module_name === null) $this->handleException('JKBuildHtml未配置参数:dist_module_name');
-        if( $this->dist_path === null) $this->handleException('JKBuildHtml未配置参数:dist_path');
-        if( $this->dir_name === null) $this->handleException('JKBuildHtml未配置参数:dist_dir_name');
-        if( $this->file_dot === null) $this->handleException('JKBuildHtml未配置参数:dist_sub_dir');
-        if( $this->sub_dir === null) $this->handleException('JKBuildHtml未配置参数:dist_file_dot');
-        if( $this->src_match === null) $this->handleException('JKBuildHtml未配置参数:dist_src_match');
-
+        if( $this->module_name === null) Utils::handleException('缺少配置参数:dist_module_name');
+        if( $this->dist_path === null) Utils::handleException('缺少配置参数:dist_path');
+        if( $this->dir_name === null) Utils::handleException('缺少配置参数:dist_dir_name');
+        if( $this->file_dot === null) Utils::handleException('缺少配置参数:dist_sub_dir');
+        if( $this->sub_dir === null) Utils::handleException('缺少配置参数:dist_file_dot');
+        if( $this->src_match === null) Utils::handleException('缺少配置参数:dist_src_match');
         $this->domain = request()->domain() . '/';
+        $this->tp_version = Utils::checkTpVer();
+        $this->dist_path = $this->tp_version == 5 ? ROOT_PATH . $this->dist_path : \think\facade\Env::get('root_path') . $this->dist_path;
     }
     /*
      *  生成单个html文件 参数实例:
@@ -129,7 +139,7 @@ class JKBuildHtml
                 $file_name = $k;
         }
         if($file_name == '') {
-            $this->handleException('该路径没有设置生成静态规则');
+            Utils::handleException('该路径没有设置生成静态规则');
         }
         return [
             $file_name,
@@ -139,12 +149,19 @@ class JKBuildHtml
     }
     protected function getDistRules()
     {
-        if (!is_file(CONF_PATH . 'dist_rules.php')) {
-            $this->handleException('未定义生成静态页的配置文件 dist_rules.php');
+        if($this->tp_version == 5) {
+            // tp 5.0
+            if (!is_file(CONF_PATH . 'dist_rules.php')) {
+                Utils::handleException('未定义生成静态页的配置文件 dist_rules.php');
+            }
+            $rules = include CONF_PATH . 'dist_rules.php';
+
+        } else {
+            // tp 5.1
+            $rules = Config::get('dist_rules.');
         }
-        $rules = include CONF_PATH . 'dist_rules.php';
         if (!is_array($rules)) {
-            $this->handleException('配置文件 dist_rules.php 格式错误');
+            Utils::handleException('配置文件 dist_rules.php 格式错误');
         }
         return $rules;
     }
@@ -298,16 +315,4 @@ class JKBuildHtml
         }
         return $res;
     }
-    // 异常处理
-    protected function handleException($msg)
-    {
-        throw new \Exception($msg);
-    }
-    //    protected function handleException($msg)
-    //    {
-    //        echo json_encode([
-    //            'code' => 0,
-    //            'msg' => $msg,
-    //        ], JSON_UNESCAPED_UNICODE);
-    //    }
 }
