@@ -1,12 +1,14 @@
 {
     "name": "jkbuildhtml/jkbuildhtml",
     "description": "Html page builder for THINKPHP framework, build static website, build html web page",
+    "keywords" : ["Html builder for thinkphp", "build static website for thinkphp" ],
     "authors": [
         {
             "name": "Ryan",
             "email": "541720500@qq.com"
         }
     ],
+    "version":"1.1.0",
     "license": "MIT",
     "require": {
         "php": ">=5.6"
