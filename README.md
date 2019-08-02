@@ -1,36 +1,63 @@
-# jk-build-html
-build static website, thinkphp, build html web page
-
-# JKBuildHtml 基于ThinkPHP生成静态站点控制器类
+# JKBuildHtml 基于ThinkPHP的静态站点生成器
 
 #### 介绍
-完美嫁接[THINKPHP 5.0/5.1](http://www.thinkphp.cn)的静态页面生成控制器，可自定义生成规则，支持动态参数，支持参数的范围设置。 是一个在原来开发过程没有变化的情况下搭建静态站的解决方案。 性能方面测试有时间搞一下。 暂时不是composer版本，如果需要的，可以留言。 使用中有其他问题的欢迎留言。
-build static site, thinkphp class, build html page
-[码云仓库地址](https://gitee.com/ray2017/jk-build-html)
+完美嫁接[THINKPHP 5.0/5.1](http://www.thinkphp.cn)的静态站点生成器，可自定义生成规则，支持动态参数，支持参数的范围设置。 是一个在原来开发过程没有变化的情况下搭建静态站的解决方案。 性能方面测试有时间搞一下。 使用中有其他问题的欢迎留言。
+build static site, build html file for THINKPHP framework
 
-## 使用TP5.1的请注意
+## 适用于TP5.0和5.1的静态站点生成器
 
-本类适用于TP5.0，因为TP5.1更改比较多，所以想适用于TP5.1，需要改动一下：
-* 首先规则放到config文件夹中，类中规则的获取`getDistRules`方法，也要使用新版本的`Config::get('dist_rules.')`
-* 配置文件放到config/app.php即可，`ROOT_PATH`改成`\think\facade\Env::get('root_path') `
-* 类的初始化方法 `_initialize` 改成 `initialize`
-以上就可以适合TP5.1了
+本类适用于TP5.0和5.1双版本，因为TP5.1较5.0变动比较多，所以本项目进行了版本的适配，请放心使用。
 
 ## 特点
+
 * 纯静态：生成的网站是静态htm页面，拷贝文件就是部署站点。
 * 方便改造：原来TP开发代码不用变动，原来TP的view文件照常写，以前怎么写模板还怎么写。
 * 边开发边生成html：建议封装控制器的fetch方法，边查看静态效果边开发，避免后期重新搭建后页面显示有问题，你可以盯着`public/dist`目录下的静态页面按F5刷新静态页面效果，也可以用原来的tp路径或路由查看模板效果。
 
+## 安装
+
+```
+composer require jkbuildhtml/jkbuildhtml
+```
+## 配置步骤需要三步
+
+ 1) 新建静态规则文件`dist_rules.php`文件到application目录，静态规则见后文。
+ 2) 添加配置参数（配置文件名 tp5是config.php tp5.1是app.php）中添加以下配置（注意斜杠不能少）
+ ```
+    // 静态站放置路径：
+    'dist_path' =>  'public/', 
+    // 静态页存放文件夹名 一般放置在public下；静态站点直接指向这个目录即可：
+    'dist_dir_name' => 'dist', 
+    // 生成的静态页子页的存放目录，即匹配规则中没有@符号的页面的存放目录，注意例中路径中的'dist/site-pages'会进行目录匹配作为替换./或../的依据，所以这个名称在项目文件夹名中最好唯一：
+    'dist_sub_dir' => 'site-pages', 
+    // 要生成静态页的模块名：
+    'dist_module_name' => 'index', 
+    // 静态页文件名字中的参数分隔符：
+    'dist_file_dot' => '_', 
+    // 静态资源路径替换 静态站点根目录下会替换成 `./` 其他会替换成 `../`
+    'dist_src_match' => '/public/static/',
+        
+ ```
+ 3) 有需要在原生tp预览模板并生成静态需求的，可以封装控制器的 fetch 方法
+
 ## 用法
 
+#### 实例化
+```
+$builder = new \JKBuildHtml\Builder()
+```
+#### 批量生成静态页
 在任意控制器里放置一下语句即可批量生成全部静态页，你需要做的是把它放到后台的某个地方了。
 页面显示是flush逐行显示的，如果想用ajax自行搞一下代码当然也行。
 ```
-controller('common/JKBuildHtml')->buildAll();
+$builder->buildAll();
 ```
+
+#### 生成单个静态页
+
 也可以单个页面生成，一般在列表页的每行数据后面加一个 `生一个页面` 按钮：
 ```
-controller('common/JKBuildHtml')->buildOne($path, ['id' => 5]);
+$builder->buildOne($path, ['id' => 5]);
 ```
 需要注意的是单个页面生成的path 一般为控制器和方法名，必须在静态生成规则中声明，否则会提示错误。
 
@@ -38,7 +65,8 @@ controller('common/JKBuildHtml')->buildOne($path, ['id' => 5]);
 ```
 protected function fetchHtml()
 {
-    controller('common/JKBuildHtml')->buildFromFetch( $html = $this->fetch(), input('get.') );
+    $builder = new \moonwalkercui\JKBuildHtml\JKBuildHtml();
+    $builder->buildFromFetch( $html = $this->fetch(), input('get.') );
     return $html;
 }
 
@@ -50,30 +78,6 @@ protected function fetchHtml()
 * 静态规则中的<值>的路径原则是，只要能请求到的地址就可以，建议不要使用的TP路由动态参数。
 * 请求路径只支持GET请求
 
-## 配置步骤
-
-* `JKBuildHtml.php` 放置在common的controller里 别处也可 注意命名空间
-* `config.php` 增加公共配置参数
-* `dist_rules.php` 静态生成规则文件，放置在application目录下
-
-## config.php 参数设置
-
-公共配置文件`config.php`中加入以下参数,注意看注释:
-
-```
-    // 静态站放置路径：
-    'dist_path' => ROOT_PATH. 'public/', 
-    // 静态页存放文件夹名 一般放置在public下；静态站点直接指向这个目录即可：
-    'dist_dir_name' => 'dist', 
-    // 生成的静态页子页的存放目录，即匹配规则中没有@符号的页面的存放目录，注意例中路径中的'dist/site-pages'会进行目录匹配作为替换./或../的依据，所以这个名称在项目文件夹名中最好唯一：
-    'dist_sub_dir' => 'site-pages', 
-    // 要生成静态页的模块名：
-    'dist_module_name' => 'index', 
-    // 静态页文件名字中的参数分隔符：
-    'dist_file_dot' => '_', 
-    // 静态资源路径替换 静态站点根目录下会替换成 `./` 其他会替换成 `../`
-    'dist_src_match' => '/public/static/', 
-```
 
 ## 关于静态资源路径
 本来tp的资源是放在public下任何位置的，但是有了静态生成类，那么就得按规则来
@@ -83,7 +87,9 @@ protected function fetchHtml()
 * 把上传的文件也放dist目录里
 * 生成完毕后这个目录下就会生成相关的html页面
 
-## 生成静态页规则文件dist_rules.php说明
+## 静态页生成规则
+
+#### 规则文件`dist_rules.php`说明：
 
  * 注：这个文件不是路由文件，和tp路由不是一回事。
   
@@ -100,27 +106,39 @@ protected function fetchHtml()
 // | 生成静态页的规则文件
 // +----------------------------------------------------------------------
 return [
-    '@index'        => 'index/index', // 这个是首页 带@的会生成在dist目录下,否则生成在子文件夹里；生成的html文件不带@
+     // 这个是首页 带@的会生成在dist目录下,否则生成在子文件夹里；生成的html文件不带@
+    '@index'        => 'index/index', 
     '@news'         => 'news/index',
-    'news_:id'      => ['news/find', 'article'],  // 这个是带db的，表示要查询article表的id列，循环生成静态页
-    'job_:id'       => ['jobs/find', 'func:getjobids'],  // 这个是带自定义方法的，表示要执行getjobis方法返回id为键的二维数组，循环生成静态页
-    'job_:id_:code' => ['index/index', 'func:dist/index/test'], // 这个是请求tp的模块/控制器/方法，返回一个二维数组
+    
+    // 这个是带db的，表示要查询article表的id列，循环生成静态页
+    'news_:id'      => ['news/find', 'article'],  
+    
+    // 这个是带自定义方法的，表示要执行getjobis方法返回id为键的二维数组，循环生成静态页
+    'job_:id'       => ['jobs/find', 'func:getjobids'],  
+    
+    // 这个是请求tp的模块/控制器/方法，返回一个二维数组
+    'job_:id_:code' => ['index/index', 'func:dist/index/test'], 
 ];
 ```
-### <键>
+#### <键>
 * 键中带:号的是有动态参数的 会生成在`dist/site-pages`目录下
 * 参数命名必须和db里的字段名称一致
 * 为防止生成错误不同参数之间需用_分开(可以修改配置)
 
-### <值>
+#### <值>
 * 值可以是一个“请求路径”，用`控制器/方法`的形式即可，请求时会自动加上自定义模块名, 如果定义了路由则写路由
+
 * 值也可以是一个数组，第一个是请求路径，会传参请求；第二个是db的名字，即参数字段所在列的所有值，系统会根据参数批量生成页面：比如'news_:id' => ['news/find', 'article'], 是查询article表里的id列，
+
 * 如果想加入db查询条件，那么就放第三个值里 比如 `id < 100`,这个会传入到db的where条件中需要符合tp查询语法, 就成了`'news_:id' => ['news/find', 'article', ['id' =>  ['<',100]]],` 或  `..."id < 100"]`
+
 * 如果想自定义生成id的函数，可以把第二个参数设置成一个全局的方法，可以放common.php里（函数名不用带`func:`）,或任意一个控制器里 写法：`'func:admin/index/getJobIds'` 或 `'func:getjobids'`
+
 * 若采用func类型的，返回值必须是以参数为键相符的二维数组。如：`['id' => [2,3,4,5]]`
+
 * func类型可以有第三个值，作为func的参数传入
 
-### 请求路径出现异常怎么办
+#### 请求路径出现异常怎么办
 
 静态生成控制器会直接把异常页面也生成到html文件中，不会停止生成
 

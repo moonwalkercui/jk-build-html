@@ -14,7 +14,7 @@
  * 3, 有需要在原生tp预览模板并生成静态需求的，可以封装控制器的 fetch 方法
  *
  */
-namespace moonwalkercui\JKBuildHtml;
+namespace JKBuildHtml;
 
 use think\App;
 
