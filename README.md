@@ -1,15 +1,19 @@
 # jk-build-html
-build static site, thinkphp class, build html page
+build static website, thinkphp, build html web page
 
 # JKBuildHtml 基于ThinkPHP生成静态站点控制器类
 
-完美嫁接[THINKPHP](http://www.thinkphp.cn/)的静态页面生成控制器，可自定义生成规则，支持动态参数，支持参数的范围设置。
-是一个在原来开发过程没有变化的情况下搭建静态站的解决方案。
-性能方面测试有时间搞一下。
-暂时不是composer版本，如果需要的，可以留言。
-使用中有其他问题的欢迎留言。
-
+#### 介绍
+完美嫁接[THINKPHP 5.0/5.1](http://www.thinkphp.cn)的静态页面生成控制器，可自定义生成规则，支持动态参数，支持参数的范围设置。 是一个在原来开发过程没有变化的情况下搭建静态站的解决方案。 性能方面测试有时间搞一下。 暂时不是composer版本，如果需要的，可以留言。 使用中有其他问题的欢迎留言。
+build static site, thinkphp class, build html page
 [码云仓库地址](https://gitee.com/ray2017/jk-build-html)
+## 使用TP5.1的请注意
+
+本类适用于TP5.0，因为TP5.1更改比较多，所以想适用于TP5.1，需要改动一下：
+* 首先规则放到config文件夹中，类中规则的获取`getDistRules`方法，也要使用新版本的`Config::get('dist_rules.')`
+* 配置文件放到config/app.php即可，`ROOT_PATH`改成`\think\facade\Env::get('root_path') `
+* 类的初始化方法 `_initialize` 改成 `initialize`
+以上就可以适合TP5.1了
 
 ## 特点
 * 纯静态：生成的网站是静态htm页面，拷贝文件就是部署站点。
@@ -95,7 +99,7 @@ protected function fetchHtml()
 // | 生成静态页的规则文件
 // +----------------------------------------------------------------------
 return [
-    '@index'        => 'index/index', // 这个是首页 会生成在dist目录下
+    '@index'        => 'index/index', // 这个是首页 带@的会生成在dist目录下,否则生成在子文件夹里；生成的html文件不带@
     '@news'         => 'news/index',
     'news_:id'      => ['news/find', 'article'],  // 这个是带db的，表示要查询article表的id列，循环生成静态页
     'job_:id'       => ['jobs/find', 'func:getjobids'],  // 这个是带自定义方法的，表示要执行getjobis方法返回id为键的二维数组，循环生成静态页
@@ -108,7 +112,7 @@ return [
 * 为防止生成错误不同参数之间需用_分开(可以修改配置)
 
 ### <值>
-* 值可以是一个“请求路径”，用`控制器/方法`的形式即可，请求时会自动加上自定义模块名
+* 值可以是一个“请求路径”，用`控制器/方法`的形式即可，请求时会自动加上自定义模块名, 如果定义了路由则写路由
 * 值也可以是一个数组，第一个是请求路径，会传参请求；第二个是db的名字，即参数字段所在列的所有值，系统会根据参数批量生成页面：比如'news_:id' => ['news/find', 'article'], 是查询article表里的id列，
 * 如果想加入db查询条件，那么就放第三个值里 比如 `id < 100`,这个会传入到db的where条件中需要符合tp查询语法, 就成了`'news_:id' => ['news/find', 'article', ['id' =>  ['<',100]]],` 或  `..."id < 100"]`
 * 如果想自定义生成id的函数，可以把第二个参数设置成一个全局的方法，可以放common.php里（函数名不用带`func:`）,或任意一个控制器里 写法：`'func:admin/index/getJobIds'` 或 `'func:getjobids'`
