@@ -1,6 +1,6 @@
 {
-    "name": "ryan/htmlbuilder",
-    "description": "thinkphp html builder",
+    "name": "moonwalkercui/JKBuildHtml",
+    "description": "Html page builder for THINKPHP framework, build static website, build html web page",
     "authors": [
         {
             "name": "Ryan",

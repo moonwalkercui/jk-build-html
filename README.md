@@ -7,6 +7,7 @@ build static website, thinkphp, build html web page
 完美嫁接[THINKPHP 5.0/5.1](http://www.thinkphp.cn)的静态页面生成控制器，可自定义生成规则，支持动态参数，支持参数的范围设置。 是一个在原来开发过程没有变化的情况下搭建静态站的解决方案。 性能方面测试有时间搞一下。 暂时不是composer版本，如果需要的，可以留言。 使用中有其他问题的欢迎留言。
 build static site, thinkphp class, build html page
 [码云仓库地址](https://gitee.com/ray2017/jk-build-html)
+
 ## 使用TP5.1的请注意
 
 本类适用于TP5.0，因为TP5.1更改比较多，所以想适用于TP5.1，需要改动一下：

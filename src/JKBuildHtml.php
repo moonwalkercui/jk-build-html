@@ -1,7 +1,7 @@
 <?php
 /**
  * 静态页面生成控制器类
- * @since  2019-3
+ * @since  2019-8
  * @author 冷风崔 <541720500@qq.com>
  *
  * 1，config.php中加入以下参数：
@@ -14,10 +14,9 @@
  * 3, 有需要在原生tp预览模板并生成静态需求的，可以封装控制器的 fetch 方法
  *
  */
-namespace app\common\controller;
-use think\Controller;
+namespace moonwalkercui;
 
-class JKBuildHtml extends Controller
+class JKBuildHtml
 {
     protected $module_name;
     protected $dist_path;
@@ -26,7 +25,7 @@ class JKBuildHtml extends Controller
     protected $domain;
     protected $src_match;
     protected $sub_dir;
-    protected function _initialize()
+    public function __construct()
     {
         $this->module_name = config('dist_module_name');
         $this->dist_path = config('dist_path');
@@ -34,14 +33,14 @@ class JKBuildHtml extends Controller
         $this->sub_dir = config('dist_sub_dir');
         $this->file_dot = config('dist_file_dot');
         $this->src_match = config('dist_src_match');
-        if(
-            $this->module_name === null ||
-            $this->dist_path === null ||
-            $this->dir_name === null ||
-            $this->file_dot === null ||
-            $this->sub_dir === null ||
-            $this->src_match === null
-        ) $this->handleError('配置参数设置有误');
+
+        if( $this->module_name === null) $this->handleException('JKBuildHtml未配置参数:dist_module_name');
+        if( $this->dist_path === null) $this->handleException('JKBuildHtml未配置参数:dist_path');
+        if( $this->dir_name === null) $this->handleException('JKBuildHtml未配置参数:dist_dir_name');
+        if( $this->file_dot === null) $this->handleException('JKBuildHtml未配置参数:dist_sub_dir');
+        if( $this->sub_dir === null) $this->handleException('JKBuildHtml未配置参数:dist_file_dot');
+        if( $this->src_match === null) $this->handleException('JKBuildHtml未配置参数:dist_src_match');
+
         $this->domain = request()->domain() . '/';
     }
     /*
@@ -79,11 +78,9 @@ class JKBuildHtml extends Controller
         // echo '[ 文件已生成 ] '. $url .' [ 路径 ] ' . $file_path . ' [ 长度 ] ' . $res . '<br>';
     }
 
-
-
     /*
      *  批量生成html
-     *  todo 改成ajax的不阻塞
+     *  可改成ajax非阻塞
      * */
     public function buildAll()
     {
@@ -98,9 +95,6 @@ class JKBuildHtml extends Controller
                 $path_params = $this->getParams($path, $expl);
                 $form_datas = $this->setFromData($path_params[1]);
                 foreach ($form_datas as $form) {
-//                    var_dump($file_name);
-//                    var_dump($form['map']);
-//                    echo '+++++++++++++<br>';
                     $this->buildFile(
                         $this->module_name. '/' .$path_params[0] . '?' . $form['str'],
                         strtr($file_name, $form['map'])
@@ -135,7 +129,7 @@ class JKBuildHtml extends Controller
                 $file_name = $k;
         }
         if($file_name == '') {
-            $this->handleError('该路径没有设置生成静态规则');
+            $this->handleException('该路径没有设置生成静态规则');
         }
         return [
             $file_name,
@@ -146,11 +140,11 @@ class JKBuildHtml extends Controller
     protected function getDistRules()
     {
         if (!is_file(CONF_PATH . 'dist_rules.php')) {
-            die('未定义生成静态页的配置文件 dist_rules.php');
+            $this->handleException('未定义生成静态页的配置文件 dist_rules.php');
         }
         $rules = include CONF_PATH . 'dist_rules.php';
         if (!is_array($rules)) {
-            die('配置文件 dist_rules.php 格式错误');
+            $this->handleException('配置文件 dist_rules.php 格式错误');
         }
         return $rules;
     }
@@ -204,6 +198,7 @@ class JKBuildHtml extends Controller
         }
     }
 
+
     /*
      * 设置路径中参数的值的范围
      * 比如路径中有'news/find/:id/:sn' 则$params为 ['id' => [1,2,3,4,5,6], 'sn' => ['a1','b2']] ...
@@ -233,8 +228,8 @@ class JKBuildHtml extends Controller
         return $res;
     }
     /*
-    arrayRank 数组排列组合：把多个数组里的元素进行组合排列。适用于商品规格和每个商品规格值的排列组合。
-    */
+     * arrayRank 数组排列组合：把多个数组里的元素进行组合排列。适用于商品规格和每个商品规格值的排列组合。
+     */
     protected function arrayRank($d)
     {
         $keys = array_keys($d);
@@ -268,14 +263,7 @@ class JKBuildHtml extends Controller
         }
         return $key;
     }
-    protected function handleError($msg)
-    {
-        echo json_encode([
-            'code' => 0,
-            'msg' => $msg,
-        ], JSON_UNESCAPED_UNICODE);
-        die;
-    }
+
     // 返回值 第一个是请求路径，第二个是参数列表 如:['id' => [1, 2, 3], 'attr' => [ 2 , 3 ]]
     protected function getParams($path, $p)
     {
@@ -310,4 +298,16 @@ class JKBuildHtml extends Controller
         }
         return $res;
     }
+    // 异常处理
+    protected function handleException($msg)
+    {
+        throw new \Exception($msg);
+    }
+    //    protected function handleException($msg)
+    //    {
+    //        echo json_encode([
+    //            'code' => 0,
+    //            'msg' => $msg,
+    //        ], JSON_UNESCAPED_UNICODE);
+    //    }
 }
