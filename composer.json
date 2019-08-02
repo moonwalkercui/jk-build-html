@@ -1,5 +1,5 @@
 {
-    "name": "jkbuildhtml",
+    "name": "jkbuildhtml/jkbuildhtml",
     "description": "Html page builder for THINKPHP framework, build static website, build html web page",
     "authors": [
         {
