@@ -24,7 +24,7 @@
  */
 namespace JKBuildHtml;
 
-class JKBuildHtml
+class Builder
 {
     protected $module_name;
     protected $dist_path;
