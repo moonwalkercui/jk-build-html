@@ -65,7 +65,7 @@ $builder->buildOne($path, ['id' => 5]);
 ```
 protected function fetchHtml()
 {
-    $builder = new \moonwalkercui\JKBuildHtml\JKBuildHtml();
+    $builder = new \JKBuildHtml\Builder();
     $builder->buildFromFetch( $html = $this->fetch(), input('get.') );
     return $html;
 }
